@@ -62,33 +62,36 @@ app.post('/ingredient', async (req, res) => {
     }
 });
 
-// POST: Create Type (for your Type model)
-app.post('/type', async (req, res) => {
-    const { name, age } = req.body;
-
+// Endpoint to fetch recipes based on user-provided ingredients
+app.post('/recipe/search', async (req, res) => {
+    const { ingredients } = req.body;
+  
     try {
-        const type = await prisma.type.create({
-            data: {
-                name,
-                age
+      if (!ingredients || ingredients.length === 0) {
+        return res.status(400).json({ error: 'Please provide a list of ingredients.' });
+      }
+  
+      // Query the database for recipes with matching ingredients
+      const recipes = await prisma.recipe.findMany({
+        where: {
+          ingredients: {
+            some: {
+              name: { in: ingredients } // Checks if any ingredient matches
             }
-        });
-        res.json(type);
+          }
+        },
+        include: {
+          ingredients: true // Include ingredients data in the response
+        }
+      });
+  
+      res.json(recipes);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+      console.error(error);
+      res.status(500).json({ error: 'An error occurred while fetching recipes.' });
     }
-});
-
-// GET: Get All Types
-app.get('/types', async (req, res) => {
-    try {
-        const types = await prisma.type.findMany();
-        res.json(types);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
-
+  });
+  
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
