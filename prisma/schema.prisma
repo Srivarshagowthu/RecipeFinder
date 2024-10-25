@@ -1,0 +1,33 @@
+// datasource configuration for PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// generator configuration for Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Recipe model
+model Recipe {
+  id          Int         @id @default(autoincrement())
+  name        String
+  instructions String
+  ingredients Ingredient[]
+}
+
+// Ingredient model
+model Ingredient {
+  id         Int      @id @default(autoincrement())
+  name       String
+  recipe     Recipe   @relation(fields: [recipeId], references: [id])
+  recipeId   Int
+}
+
+// Type model
+model Type {
+  id   Int    @id @default(autoincrement())
+  name String
+  age  Int
+}
